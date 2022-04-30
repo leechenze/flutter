@@ -20,7 +20,7 @@ const String kgCloudHttpHost = 'https://cloud.google.com/';
 
 /// Android specific required HTTP hosts.
 const List<String> androidRequiredHttpHosts = <String>[
-  'https://maven.google.com/',
+  'https://dl.google.com/dl/android/maven2/',
 ];
 
 /// MacOS specific required HTTP hosts.
@@ -32,8 +32,8 @@ const List<String> macOSRequiredHttpHosts = <String>[
 class HttpHostValidator extends DoctorValidator {
   HttpHostValidator(
       {required Platform platform,
-        required FeatureFlags featureFlags,
-        required HttpClient httpClient})
+      required FeatureFlags featureFlags,
+      required HttpClient httpClient})
       : _platform = platform,
         _featureFlags = featureFlags,
         _httpClient = httpClient,
@@ -48,17 +48,17 @@ class HttpHostValidator extends DoctorValidator {
       'HTTP Host availability check is taking a long time...';
 
   List<String> get _requiredHosts => <String>[
-    if (_featureFlags.isMacOSEnabled) ...macOSRequiredHttpHosts,
-    if (_featureFlags.isAndroidEnabled) ...androidRequiredHttpHosts,
-    _platform.environment[kEnvPubHostedUrl] ?? kPubDevHttpHost,
-    _platform.environment[kEnvCloudUrl] ?? kgCloudHttpHost,
-  ];
+        if (_featureFlags.isMacOSEnabled) ...macOSRequiredHttpHosts,
+        if (_featureFlags.isAndroidEnabled) ...androidRequiredHttpHosts,
+        _platform.environment[kEnvPubHostedUrl] ?? kPubDevHttpHost,
+        _platform.environment[kEnvCloudUrl] ?? kgCloudHttpHost,
+      ];
 
   /// Make a head request to the HTTP host. HTTP Host is available if no exception happened
   Future<_HostValidationResult> _checkHostAvailability(String host) async {
     try {
       final int timeout =
-      int.parse(_platform.environment[kDoctorHostTimeout] ?? '10');
+          int.parse(_platform.environment[kDoctorHostTimeout] ?? '10');
       final HttpClientRequest req = await _httpClient.headUrl(Uri.parse(host));
       await req.close().timeout(Duration(seconds: timeout));
       // HTTP Host is available if no exception happened
@@ -82,10 +82,10 @@ class HttpHostValidator extends DoctorValidator {
   Future<ValidationResult> validate() async {
     final List<ValidationMessage> messages = <ValidationMessage>[];
     final Iterable<Future<_HostValidationResult>> availabilityResultFutures =
-    _requiredHosts.map(_checkHostAvailability);
+        _requiredHosts.map(_checkHostAvailability);
 
     final List<_HostValidationResult> availabilityResults =
-    (await Future.wait(availabilityResultFutures)).toList();
+        (await Future.wait(availabilityResultFutures)).toList();
 
     if (availabilityResults
         .every((_HostValidationResult result) => result.available)) {
